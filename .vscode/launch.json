@@ -1,0 +1,25 @@
+{
+  "configurations": [
+    {
+      "name": "Debug main",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/dist/main",
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "MIMode": "lldb",
+      "preLaunchTask": "C/C++: clang build active file"
+    },
+    {
+      "name": "CodeLLDB",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/main",
+      // "args": [
+      //   "-arg1",
+      //   "-arg2"
+      // ],
+    }
+  ]
+}
