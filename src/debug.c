@@ -5,7 +5,7 @@
 
 void disassembleChunk(Chunk *chunk, const char *name)
 {
-  printf("== %s ==\n", name);
+  printf("CHUNK == %s ==\n", name);
   printf("OFFSET | LINE | INSTRUCTION        | OPERAND | VALUE\n");
   printf("-------|------|--------------------|---------|-----------\n");
 
@@ -34,6 +34,17 @@ static int constantInstruction(const char *name, Chunk *chunk, int offset)
   return offset + 2;
 }
 
+/*
+  Prints the current instruction's offset and source line number in a formatted way.
+
+  - The offset is printed as a zero-padded 4-digit decimal (e.g., 0003).
+  - If the current instruction is on the same source line as the previous instruction,
+    a dash ("   - | ") is printed to indicate the line hasn't changed.
+  - Otherwise, the actual line number is printed, right-aligned to 4 spaces.
+
+  This helps visually group bytecode instructions by their original source lines
+  when disassembling a chunk.
+*/
 int disassembleInstruction(Chunk *chunk, int offset)
 {
   // %d - decimal format
@@ -53,10 +64,21 @@ int disassembleInstruction(Chunk *chunk, int offset)
 
   switch (instruction)
   {
-  case OP_RETURN:
-    return simpleInstruction("OP_RETURN", offset);
   case OP_CONSTANT:
     return constantInstruction("OP_CONSTANT", chunk, offset);
+  case OP_NEGATE:
+    return simpleInstruction("OP_NEGATE", offset);
+  case OP_ADD:
+    return simpleInstruction("OP_ADD", offset);
+  case OP_SUBTRACT:
+    return simpleInstruction("OP_SUBTRACT", offset);
+  case OP_MULTIPLY:
+    return simpleInstruction("OP_MULTIPLY", offset);
+  case OP_DIVIDE:
+    return simpleInstruction("OP_DIVIDE", offset);
+  case OP_RETURN:
+    return simpleInstruction("OP_RETURN", offset);
+
   default:
     printf("Unknown opcode %d\n", instruction);
     return offset + 1;

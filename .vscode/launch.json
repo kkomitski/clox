@@ -9,7 +9,17 @@
       "stopAtEntry": false,
       "externalConsole": false,
       "MIMode": "lldb",
-      "preLaunchTask": "C/C++: clang build active file"
+      "preLaunchTask": "C/C++: clang build active file",
+      "setupCommands": [
+        {
+          "description": "Format OpcodeByte as decimal",
+          "text": "type format add -f d OpcodeByte",
+          "ignoreFailures": false
+        }
+      ],
+      "args": [
+        "./test.txt"
+      ]
     },
     {
       "name": "CodeLLDB",

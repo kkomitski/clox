@@ -24,37 +24,46 @@
   [01] - The opcode
   [00][01] - The index to constant but (0-65,535)
 */
-typedef enum
-{
+typedef enum {
+  // Return from the current function or exit the VM (close the stack frame)
+  OP_RETURN = 100, // 00
+
   /*
   Push a constant value from the constants array onto the stack
   This will be 2 parts:
   - [1 byte] for the opcode (0-255)
   - [1 byte] for the index of the constants (0-255)
   */
-  OP_CONSTANT, // 00
+  OP_CONSTANT, // 101
   /*
   This will be 2 parts:
   - [1 byte] for the opcode (0-255)
   - [2 bytes] for the index of the constants (0-65,536)
   */
-  // OP_CONSTANT_LONG, // 00
+  OP_CONSTANT_LONG, // 102
   /*
   This will be 2 parts:
   - [1 byte] for the opcode (0-255)
   - [4 bytes] for the index of the constants (0-4,294,967,295)
   */
-  // OP_CONSTANT_LONG_LONG, // 02
+  // OP_CONSTANT_LONG_LONG,
+  OP_ADD,      // 103
+  OP_SUBTRACT, // 104
+  OP_MULTIPLY, // 105
+  OP_DIVIDE,   // 106
 
-  // Return from the current function or exit the VM (close the stack frame)
-  OP_RETURN, // 01
+  OP_NEGATE, // 106
 } OpCode;
+
+// Defining it like this allows for adding custom type formatting into decimal
+// in the debugger
+typedef uint8_t OpcodeByte;
 
 /*
 This is a dynamic array holding the chunk of bytecode
 
-A single chunk of bytecode can have multiple bytecode operations and generally corresponds
-to a function, method or script.
+A single chunk of bytecode can have multiple bytecode operations and generally
+corresponds to a function, method or script.
 
 It will hold the bytecode instructions in an array block of memory
 Where each instruction will have its own format (and hence a different size).
@@ -62,20 +71,21 @@ See OpCode enum for instruction formats.
 
 It will also hold an embedded struct which holds the literals as constants
 */
-typedef struct
-{
+
+typedef struct {
   int count;            // 32 bits (4 bytes)
   int capacity;         // 32 bits (4 bytes)
-  uint8_t *code;        // 64 bits (8 bytes) on a 64-bit system
-  int *lines;           // 32 bits (4 bytes)
-  ValueArray constants; // Embedded struct, typically 128 bits (16 bytes: 2 ints + pointer)
-} Chunk;                // Total: 288 bits (36 bytes) on a 64-bit system
+  OpcodeByte *code;     // 64 bits (8 bytes)
+  int *lines;           // 64 bits (8 bytes)
+  ValueArray constants; // Embedded struct, typically 128 bits (16 bytes: 2 ints
+                        // + pointer)
+} Chunk;                // Total: 320 bits (40 bytes) on a 64-bit system
 
 void initChunk(Chunk *chunk);
 void writeChunk(Chunk *chunk, uint8_t byte, int line);
 void freeChunk(Chunk *chunk);
 
-int addConstant(Chunk *chunk, Value value);
+uint16_t addConstant(Chunk *chunk, Value value);
 
 #endif
 
@@ -87,7 +97,8 @@ uint8_t foo = {0, 0, 0, 0, 0, 0};
 in this scenario foo holds the value of "12", because its just a pointer
 to the first element in the array
 
-if we pass this array to something for processing, we are just passing the handle
+if we pass this array to something for processing, we are just passing the
+handle
 
 once processing starts we start incrementing foo, which will be 13, 14, 15 etc
 

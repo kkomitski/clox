@@ -17,6 +17,9 @@
 #define GROW_CAPACITY(capacity) \
   ((capacity) < 8 ? 8 : (capacity) * 2)
 
+#define SHRINK_CAPACITY(capacity) \
+  ((capacity) > 8 ? (capacity) / 2 : 8)
+
 /**
  * The allocator doesn't know what type of the new block is so it returns `void*` which basically means
  * a pointer to something unknown
@@ -37,6 +40,9 @@
  * *element is the type of data stored in the array - can be primitive or struct
  */
 #define GROW_ARRAY(type, pointer, oldCount, newCount) \
+  (type *)reallocate(pointer, sizeof(type) * (oldCount), sizeof(type) * (newCount))
+
+#define SHRINK_ARRAY(type, pointer, oldCount, newCount) \
   (type *)reallocate(pointer, sizeof(type) * (oldCount), sizeof(type) * (newCount))
 
 #define FREE_ARRAY(type, pointer, oldCount) \

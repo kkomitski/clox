@@ -10,7 +10,9 @@
     "deque": "c",
     "iterator": "c",
     "string_view": "c",
-    "unordered_map": "c"
+    "unordered_map": "c",
+    "value.h": "c",
+    "chunk.h": "c"
   },
   "lldb.displayFormat": "auto",
   "lldb.showDisassembly": "never",

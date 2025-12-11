@@ -19,13 +19,14 @@
 */
 #include "common.h"
 #include "memory.h"
-// A 'double' is a double float - 64bit float
+// A 'double' is a double float - 64bit float (8 bytes)
 typedef double Value;
 
+/* Dynamic array limited to 65536 indexes. */
 typedef struct
 {
-  int capacity;
-  int count;
+  u_int16_t capacity;
+  u_int16_t count;
   Value *values;
 } ValueArray;
 
