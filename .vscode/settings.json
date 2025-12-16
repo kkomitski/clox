@@ -17,5 +17,8 @@
   "lldb.displayFormat": "auto",
   "lldb.showDisassembly": "never",
   "lldb.dereferencePointers": true,
-  "lldb.consoleMode": "evaluate"
+  "lldb.consoleMode": "evaluate",
+  "cSpell.words": [
+    "Falsey"
+  ]
 }

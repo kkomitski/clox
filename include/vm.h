@@ -2,6 +2,7 @@
 #define clox_vm_h
 
 #include "chunk.h"
+#include "object.h"
 #include "value.h"
 
 #define STACK_MAX 2048
@@ -9,14 +10,14 @@
 // The indexes for this stack can be fit into a single byte
 // #define STACK_MAX 256
 
-typedef struct
-{
+typedef struct {
   Chunk *chunk; // 40 bytes
   /*
   Instruction Position
   this will be an actual pointer, pointed directly at the position
 
-  [OP_CONST, 3, OP_ADD, OP_RETURN] - it will skip the 3 here, and always point to the OPs
+  [OP_CONST, 3, OP_ADD, OP_RETURN] - it will skip the 3 here, and always point
+  to the OPs
   */
   uint8_t *ip; // 8 bytes
   int stackCapacity;
@@ -26,14 +27,17 @@ typedef struct
   we just add the values directly into the box and then we increment the pointer
   */
   Value *stackTop; // 8 bytes
-} VM;              // 2072 bytes (2.072kb)
+  Obj *objects;
+} VM; // 2072 bytes (2.072kb)
 
-typedef enum
-{
+typedef enum {
   INTERPRET_OK,
   INTERPRET_COMPILER_ERROR,
   INTERPRET_RUNTIME_ERROR,
 } InterpretResult;
+
+// Expose the global vm variable
+extern VM vm;
 
 void initVM();
 void freeVM();

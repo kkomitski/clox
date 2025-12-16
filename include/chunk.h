@@ -52,7 +52,15 @@ typedef enum {
   OP_MULTIPLY, // 105
   OP_DIVIDE,   // 106
 
+  OP_NOT,
+
   OP_NEGATE, // 106
+  OP_NIL,
+  OP_TRUE,
+  OP_FALSE,
+  OP_EQUAL,
+  OP_GREATER,
+  OP_LESS,
 } OpCode;
 
 // Defining it like this allows for adding custom type formatting into decimal
