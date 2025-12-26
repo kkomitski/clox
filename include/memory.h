@@ -4,7 +4,7 @@
 #include "common.h"
 #include "object.h"
 
-#define ALLOCATE(type, count) (type *)reallocate(NULL, 0, sizeof(type) * count)
+#define ALLOCATE(type, count) (type*)reallocate(NULL, 0, sizeof(type) * count)
 #define FREE(type, pointer) reallocate(pointer, sizeof(type), 0)
 
 /**
@@ -44,12 +44,12 @@
  * *element is the type of data stored in the array - can be primitive or struct
  */
 #define GROW_ARRAY(type, pointer, oldCount, newCount)                          \
-  (type *)reallocate(pointer, sizeof(type) * (oldCount),                       \
-                     sizeof(type) * (newCount))
+  (type*)reallocate(pointer, sizeof(type) * (oldCount),                        \
+                    sizeof(type) * (newCount))
 
 #define SHRINK_ARRAY(type, pointer, oldCount, newCount)                        \
-  (type *)reallocate(pointer, sizeof(type) * (oldCount),                       \
-                     sizeof(type) * (newCount))
+  (type*)reallocate(pointer, sizeof(type) * (oldCount),                        \
+                    sizeof(type) * (newCount))
 
 #define FREE_ARRAY(type, pointer, oldCount)                                    \
   reallocate(pointer, sizeof(type) * (oldCount), 0)
@@ -67,7 +67,7 @@
  * | Non-zero  | Smaller than oldSize   | Shrink existing allocation |
  * | Non-zero  | Larger than oldSize    | Grow existing allocation   |
  */
-void *reallocate(void *pointer, size_t oldSize, size_t newSize);
+void* reallocate(void* pointer, size_t oldSize, size_t newSize);
 
 // Chase down the obj linked list and free all the memory
 void freeObjects();

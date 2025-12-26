@@ -19,7 +19,6 @@
   of the bytes themselves.
 */
 #include "common.h"
-#include "memory.h"
 
 typedef struct Obj Obj;
 typedef struct ObjString ObjString;
@@ -37,7 +36,7 @@ typedef struct {
   union {
     bool boolean;
     double number; // 64 bit / 8 byte
-    Obj *obj;
+    Obj* obj;
   } as;
 } Value; // 128 bits/16 bytes
 
@@ -57,19 +56,19 @@ typedef struct {
 #define BOOL_VAL(value) ((Value){VAL_BOOL, {.boolean = value}})
 #define NIL_VAL ((Value){VAL_NIL, {.number = 0}})
 #define NUMBER_VAL(value) ((Value){VAL_NUMBER, {.number = value}})
-#define OBJ_VAL(object) ((Value){VAL_OBJ, {.obj = (Obj *)object}})
+#define OBJ_VAL(object) ((Value){VAL_OBJ, {.obj = (Obj*)object}})
 
 /* Dynamic array limited to 65536 indexes. */
 typedef struct {
-  u_int16_t capacity;
-  u_int16_t count;
-  Value *values;
+  uint16_t capacity;
+  uint16_t count;
+  Value* values;
 } ValueArray;
 
 bool valuesEqual(Value a, Value b);
-void initValueArray(ValueArray *array);
-void writeValueArray(ValueArray *array, Value value);
-void freeValueArray(ValueArray *array);
+void initValueArray(ValueArray* array);
+void writeValueArray(ValueArray* array, Value value);
+void freeValueArray(ValueArray* array);
 void printValue(Value value);
 
 #endif

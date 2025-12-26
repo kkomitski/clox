@@ -55,9 +55,14 @@ typedef enum {
   OP_NOT,
 
   OP_NEGATE, // 106
+  OP_PRINT,
   OP_NIL,
   OP_TRUE,
   OP_FALSE,
+  OP_POP,
+  OP_GET_GLOBAL,
+  OP_SET_GLOBAL,
+  OP_DEFINE_GLOBAL,
   OP_EQUAL,
   OP_GREATER,
   OP_LESS,
@@ -83,17 +88,17 @@ It will also hold an embedded struct which holds the literals as constants
 typedef struct {
   int count;            // 32 bits (4 bytes)
   int capacity;         // 32 bits (4 bytes)
-  OpcodeByte *code;     // 64 bits (8 bytes)
-  int *lines;           // 64 bits (8 bytes)
+  OpcodeByte* code;     // 64 bits (8 bytes)
+  int* lines;           // 64 bits (8 bytes)
   ValueArray constants; // Embedded struct, typically 128 bits (16 bytes: 2 ints
                         // + pointer)
 } Chunk;                // Total: 320 bits (40 bytes) on a 64-bit system
 
-void initChunk(Chunk *chunk);
-void writeChunk(Chunk *chunk, uint8_t byte, int line);
-void freeChunk(Chunk *chunk);
+void initChunk(Chunk* chunk);
+void writeChunk(Chunk* chunk, uint8_t byte, int line);
+void freeChunk(Chunk* chunk);
 
-uint16_t addConstant(Chunk *chunk, Value value);
+uint16_t addConstant(Chunk* chunk, Value value);
 
 #endif
 

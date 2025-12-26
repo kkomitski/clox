@@ -3,7 +3,7 @@
 #include "debug.h"
 #include "value.h"
 
-void disassembleChunk(Chunk *chunk, const char *name) {
+void disassembleChunk(Chunk* chunk, const char* name) {
   printf("CHUNK == %s ==\n", name);
   printf("OFFSET | LINE | INSTRUCTION        | OPERAND | VALUE\n");
   printf("-------|------|--------------------|---------|-----------\n");
@@ -15,13 +15,13 @@ void disassembleChunk(Chunk *chunk, const char *name) {
 
 // The `static` keyword prevents external linkage - so the fn is
 // only available inside this file
-static int simpleInstruction(const char *name, int offset) {
+static int simpleInstruction(const char* name, int offset) {
   printf("%-18s |         |\n", name);
   // Because the `OP_RETURN` is just the opcode
   return offset + 1;
 }
 
-static int constantInstruction(const char *name, Chunk *chunk, int offset) {
+static int constantInstruction(const char* name, Chunk* chunk, int offset) {
   uint8_t constant = chunk->code[offset + 1];
   printf("%-18s | %7d | ", name, constant);
   printValue(chunk->constants.values[constant]);
@@ -44,7 +44,7 @@ static int constantInstruction(const char *name, Chunk *chunk, int offset) {
   This helps visually group bytecode instructions by their original source lines
   when disassembling a chunk.
 */
-int disassembleInstruction(Chunk *chunk, int offset) {
+int disassembleInstruction(Chunk* chunk, int offset) {
   // %d - decimal format
   // 0 - pad with zeroes
   // 4 - up to four digits
@@ -72,10 +72,20 @@ int disassembleInstruction(Chunk *chunk, int offset) {
     return simpleInstruction("OP_DIVIDE", offset);
   case OP_RETURN:
     return simpleInstruction("OP_RETURN", offset);
+  case OP_PRINT:
+    return simpleInstruction("OP_PRINT", offset);
   case OP_NIL:
     return simpleInstruction("OP_NIL", offset);
   case OP_FALSE:
     return simpleInstruction("OP_FALSE", offset);
+  case OP_POP:
+    return simpleInstruction("OP_POP", offset);
+  case OP_DEFINE_GLOBAL:
+    return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
+  case OP_GET_GLOBAL:
+    return constantInstruction("OP_GET_GLOBAL", chunk, offset);
+  case OP_SET_GLOBAL:
+    return constantInstruction("OP_SET_GLOBAL", chunk, offset);
   case OP_NOT:
     return simpleInstruction("OP_NOT", offset);
   case OP_TRUE:

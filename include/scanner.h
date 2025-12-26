@@ -55,12 +55,12 @@ this way we don't need to allocate any new memory
 */
 typedef struct {
   TokenType type;
-  const char *start;
+  const char* start;
   int length;
   int line;
 } Token;
 
-void initScanner(const char *scanner);
+void initScanner(const char* scanner);
 Token scanToken();
 
 #endif

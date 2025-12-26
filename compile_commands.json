@@ -1,0 +1,132 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-I./include",
+      "-o",
+      "./dist/main",
+      "./src/chunk.c"
+    ],
+    "directory": "/Users/kkomitski/Code/c/clox",
+    "file": "/Users/kkomitski/Code/c/clox/src/chunk.c",
+    "output": "/Users/kkomitski/Code/c/clox/dist/main"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-I./include",
+      "-o",
+      "./dist/main",
+      "./src/main.c"
+    ],
+    "directory": "/Users/kkomitski/Code/c/clox",
+    "file": "/Users/kkomitski/Code/c/clox/src/main.c",
+    "output": "/Users/kkomitski/Code/c/clox/dist/main"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-I./include",
+      "-o",
+      "./dist/main",
+      "./src/memory.c"
+    ],
+    "directory": "/Users/kkomitski/Code/c/clox",
+    "file": "/Users/kkomitski/Code/c/clox/src/memory.c",
+    "output": "/Users/kkomitski/Code/c/clox/dist/main"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-I./include",
+      "-o",
+      "./dist/main",
+      "./src/debug.c"
+    ],
+    "directory": "/Users/kkomitski/Code/c/clox",
+    "file": "/Users/kkomitski/Code/c/clox/src/debug.c",
+    "output": "/Users/kkomitski/Code/c/clox/dist/main"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-I./include",
+      "-o",
+      "./dist/main",
+      "./src/value.c"
+    ],
+    "directory": "/Users/kkomitski/Code/c/clox",
+    "file": "/Users/kkomitski/Code/c/clox/src/value.c",
+    "output": "/Users/kkomitski/Code/c/clox/dist/main"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-I./include",
+      "-o",
+      "./dist/main",
+      "./src/vm.c"
+    ],
+    "directory": "/Users/kkomitski/Code/c/clox",
+    "file": "/Users/kkomitski/Code/c/clox/src/vm.c",
+    "output": "/Users/kkomitski/Code/c/clox/dist/main"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-I./include",
+      "-o",
+      "./dist/main",
+      "./src/compiler.c"
+    ],
+    "directory": "/Users/kkomitski/Code/c/clox",
+    "file": "/Users/kkomitski/Code/c/clox/src/compiler.c",
+    "output": "/Users/kkomitski/Code/c/clox/dist/main"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-I./include",
+      "-o",
+      "./dist/main",
+      "./src/scanner.c"
+    ],
+    "directory": "/Users/kkomitski/Code/c/clox",
+    "file": "/Users/kkomitski/Code/c/clox/src/scanner.c",
+    "output": "/Users/kkomitski/Code/c/clox/dist/main"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-I./include",
+      "-o",
+      "./dist/main",
+      "./src/object.c"
+    ],
+    "directory": "/Users/kkomitski/Code/c/clox",
+    "file": "/Users/kkomitski/Code/c/clox/src/object.c",
+    "output": "/Users/kkomitski/Code/c/clox/dist/main"
+  },
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-c",
+      "-I./include",
+      "-o",
+      "./dist/main",
+      "./src/table.c"
+    ],
+    "directory": "/Users/kkomitski/Code/c/clox",
+    "file": "/Users/kkomitski/Code/c/clox/src/table.c",
+    "output": "/Users/kkomitski/Code/c/clox/dist/main"
+  }
+]

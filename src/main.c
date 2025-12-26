@@ -30,8 +30,8 @@ file. Since we sought to the end, that’s the size. We rewind back to the
 beginning, allocate a string of that size, and read the whole file in a single
 batch.
  */
-static char *readFile(const char *path) {
-  FILE *file = fopen(path, "rb");
+static char* readFile(const char* path) {
+  FILE* file = fopen(path, "rb");
 
   if (file == NULL) {
     fprintf(stderr, "Could not open file \"%s\".\n", path);
@@ -42,7 +42,7 @@ static char *readFile(const char *path) {
   size_t fileSize = ftell(file); // tell the size
   rewind(file);                  // rewind back to first byte
 
-  char *buffer = (char *)malloc(fileSize + 1);
+  char* buffer = (char*)malloc(fileSize + 1);
   if (buffer == NULL) {
     fprintf(stderr, "Not enough memory to read \"%s\".\n", path);
     exit(74);
@@ -64,8 +64,8 @@ static char *readFile(const char *path) {
   return buffer;
 }
 
-static void runFile(const char *path) {
-  char *source = readFile(path);
+static void runFile(const char* path) {
+  char* source = readFile(path);
   InterpretResult result = interpret(source);
   free(source);
 
@@ -73,7 +73,7 @@ static void runFile(const char *path) {
   if (result == INTERPRET_RUNTIME_ERROR) exit(70);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   initVM();
 
   if (argc == 1) {

@@ -10,3 +10,5 @@ BraceWrapping:
   AfterStruct: false
   BeforeElse: false
   IndentBraces: false
+DerivePointerAlignment: false
+PointerAlignment: Left

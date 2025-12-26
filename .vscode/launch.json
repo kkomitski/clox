@@ -1,7 +1,21 @@
 {
   "configurations": [
     {
-      "name": "Debug main",
+      "name": "LLDB",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/dist/main",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "C/C++: clang build active file",
+      "initCommands": [
+        "type format add -f decimal uint8_t"
+      ],
+      // "args": [
+      //   "./test.txt"
+      // ]
+    },
+    {
+      "name": "CPPDBG",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/dist/main",
@@ -21,15 +35,5 @@
         "./test.txt"
       ]
     },
-    {
-      "name": "CodeLLDB",
-      "type": "lldb",
-      "request": "launch",
-      "program": "${workspaceFolder}/main",
-      // "args": [
-      //   "-arg1",
-      //   "-arg2"
-      // ],
-    }
   ]
 }
