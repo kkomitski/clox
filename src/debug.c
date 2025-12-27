@@ -1,30 +1,101 @@
 #include <stdio.h>
 
 #include "debug.h"
+#include "object.h"
 #include "value.h"
+
+static void printStackColumn(Value* stack, Value* stackTop) {
+  printf(" [");
+  if (stack == stackTop) {
+    printf("]");
+    return;
+  }
+  
+  for (Value* slot = stack; slot < stackTop; slot++) {
+    if (slot != stack) printf(", ");
+    printValue(*slot);
+  }
+  printf("]");
+}
+
+static void printValueColumn(Value value) {
+  char buffer[32];
+  
+  if (IS_NUMBER(value)) {
+    snprintf(buffer, sizeof(buffer), "%.14g", AS_NUMBER(value));
+  } else if (IS_BOOL(value)) {
+    snprintf(buffer, sizeof(buffer), "%s", AS_BOOL(value) ? "true" : "false");
+  } else if (IS_NIL(value)) {
+    snprintf(buffer, sizeof(buffer), "nil");
+  } else if (IS_OBJ(value)) {
+    if (IS_STRING(value)) {
+      ObjString* str = AS_STRING(value);
+      snprintf(buffer, sizeof(buffer), "\"%.*s\"", 
+                     (int)(sizeof(buffer) - 3 < str->length ? sizeof(buffer) - 3 : str->length), 
+                     str->chars);
+    } else {
+      snprintf(buffer, sizeof(buffer), "<obj>");
+    }
+  } else {
+    snprintf(buffer, sizeof(buffer), "?");
+  }
+  
+  printf("%-14s", buffer);
+}
 
 void disassembleChunk(Chunk* chunk, const char* name) {
   printf("CHUNK == %s ==\n", name);
-  printf("OFFSET | LINE | INSTRUCTION        | OPERAND | VALUE\n");
-  printf("-------|------|--------------------|---------|-----------\n");
+  printf("SIZE | OFFSET | LINE | INSTRUCTION        | OPERAND | VALUE\n");
+  printf("-----|-------|------|--------------------|---------|-----------\n");
 
   for (int offset = 0; offset < chunk->count;) {
-    offset = disassembleInstruction(chunk, offset);
+    offset = disassembleInstruction(chunk, offset, NULL, NULL);
   }
 }
 
 // The `static` keyword prevents external linkage - so the fn is
 // only available inside this file
-static int simpleInstruction(const char* name, int offset) {
-  printf("%-18s |         |\n", name);
+static int simpleInstruction(const char* name, int offset, Value* stack, Value* stackTop) {
+  printf("%-18s |         | %-14s |", name, "");
+  if (stack != NULL) {
+    printStackColumn(stack, stackTop);
+  }
+  printf("\n");
   // Because the `OP_RETURN` is just the opcode
   return offset + 1;
 }
 
-static int constantInstruction(const char* name, Chunk* chunk, int offset) {
+static int byteInstruction(const char* name, Chunk* chunk, int offset, Value* stack, Value* stackTop) {
+  uint8_t slot = chunk->code[offset + 1];
+  printf("%-18s | %7d | %-14s |", name, slot, "");
+  if (stack != NULL) {
+    printStackColumn(stack, stackTop);
+  }
+  printf("\n");
+  return offset + 2; 
+}
+
+static int jumpInstruction(const char* name, int sign, Chunk* chunk, int offset, Value* stack, Value* stackTop) {
+  uint16_t jump = (uint16_t)(chunk->code[offset + 1] << 8);
+  jump |= chunk->code[offset + 2];
+  char buffer[32];
+  snprintf(buffer, sizeof(buffer), "%04d -> %04d", offset, offset + 3 + sign * jump);
+  printf("%-18s | %7s | %-14s |", name, "", buffer);
+  if (stack != NULL) {
+    printStackColumn(stack, stackTop);
+  }
+  printf("\n");
+  return offset + 3;
+}
+
+static int constantInstruction(const char* name, Chunk* chunk, int offset, Value* stack, Value* stackTop) {
   uint8_t constant = chunk->code[offset + 1];
   printf("%-18s | %7d | ", name, constant);
-  printValue(chunk->constants.values[constant]);
+  printValueColumn(chunk->constants.values[constant]);
+  printf(" |");
+  if (stack != NULL) {
+    printStackColumn(stack, stackTop);
+  }
   printf("\n");
   // Because the `OP_CONSTANT` is actually 2 bytes, one for the opcode, one for
   // the index of the constant
@@ -43,62 +114,97 @@ static int constantInstruction(const char* name, Chunk* chunk, int offset) {
 
   This helps visually group bytecode instructions by their original source lines
   when disassembling a chunk.
+  
+  Pass NULL for stack and stackTop to omit stack visualization.
 */
-int disassembleInstruction(Chunk* chunk, int offset) {
-  // %d - decimal format
-  // 0 - pad with zeroes
-  // 4 - up to four digits
-  printf("%04d   | ", offset);
+int disassembleInstruction(Chunk* chunk, int offset, Value* stack, Value* stackTop) {
+  uint8_t instruction = chunk->code[offset];
+  int size = 1; // default size for simple instructions
+  switch (instruction) {
+    case OP_CONSTANT:
+    case OP_DEFINE_GLOBAL:
+    case OP_GET_GLOBAL:
+    case OP_SET_GLOBAL:
+      size = 2; break;
+    case OP_GET_LOCAL:
+    case OP_SET_LOCAL:
+      size = 2; break;
+    case OP_JUMP:
+    case OP_JUMP_IF_FALSE:
+      size = 3; break;
+    default:
+      size = 1; break;
+  }
+
+  // Print size and offset
+  printf("%4d | %04d   | ", size, offset);
   if (offset > 0 && chunk->lines[offset] == chunk->lines[offset - 1]) {
     printf("   - | ");
   } else {
     printf("%4d | ", chunk->lines[offset]);
   }
 
-  uint8_t instruction = chunk->code[offset];
-
   switch (instruction) {
   case OP_CONSTANT:
-    return constantInstruction("OP_CONSTANT", chunk, offset);
+    return constantInstruction("OP_CONSTANT", chunk, offset, stack, stackTop);
   case OP_NEGATE:
-    return simpleInstruction("OP_NEGATE", offset);
+    return simpleInstruction("OP_NEGATE", offset, stack, stackTop);
   case OP_ADD:
-    return simpleInstruction("OP_ADD", offset);
+    return simpleInstruction("OP_ADD", offset, stack, stackTop);
   case OP_SUBTRACT:
-    return simpleInstruction("OP_SUBTRACT", offset);
+    return simpleInstruction("OP_SUBTRACT", offset, stack, stackTop);
   case OP_MULTIPLY:
-    return simpleInstruction("OP_MULTIPLY", offset);
+    return simpleInstruction("OP_MULTIPLY", offset, stack, stackTop);
   case OP_DIVIDE:
-    return simpleInstruction("OP_DIVIDE", offset);
+    return simpleInstruction("OP_DIVIDE", offset, stack, stackTop);
   case OP_RETURN:
-    return simpleInstruction("OP_RETURN", offset);
+    return simpleInstruction("OP_RETURN", offset, stack, stackTop);
   case OP_PRINT:
-    return simpleInstruction("OP_PRINT", offset);
+    return simpleInstruction("OP_PRINT", offset, stack, stackTop);
   case OP_NIL:
-    return simpleInstruction("OP_NIL", offset);
+    return simpleInstruction("OP_NIL", offset, stack, stackTop);
   case OP_FALSE:
-    return simpleInstruction("OP_FALSE", offset);
+    return simpleInstruction("OP_FALSE", offset, stack, stackTop);
   case OP_POP:
-    return simpleInstruction("OP_POP", offset);
+    return simpleInstruction("OP_POP", offset, stack, stackTop);
+  case OP_GET_LOCAL:
+    return byteInstruction("OP_GET_LOCAL", chunk, offset, stack, stackTop);
+  case OP_SET_LOCAL:
+    return byteInstruction("OP_SET_LOCAL", chunk, offset, stack, stackTop);
   case OP_DEFINE_GLOBAL:
-    return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
+    return constantInstruction("OP_DEFINE_GLOBAL", chunk, offset, stack, stackTop);
   case OP_GET_GLOBAL:
-    return constantInstruction("OP_GET_GLOBAL", chunk, offset);
+    return constantInstruction("OP_GET_GLOBAL", chunk, offset, stack, stackTop);
   case OP_SET_GLOBAL:
-    return constantInstruction("OP_SET_GLOBAL", chunk, offset);
+    return constantInstruction("OP_SET_GLOBAL", chunk, offset, stack, stackTop);
   case OP_NOT:
-    return simpleInstruction("OP_NOT", offset);
+    return simpleInstruction("OP_NOT", offset, stack, stackTop);
   case OP_TRUE:
-    return simpleInstruction("OP_TRUE", offset);
+    return simpleInstruction("OP_TRUE", offset, stack, stackTop);
   case OP_EQUAL:
-    return simpleInstruction("OP_EQUAL", offset);
+    return simpleInstruction("OP_EQUAL", offset, stack, stackTop);
   case OP_GREATER:
-    return simpleInstruction("OP_GREATER", offset);
+    return simpleInstruction("OP_GREATER", offset, stack, stackTop);
   case OP_LESS:
-    return simpleInstruction("OP_LESS", offset);
+    return simpleInstruction("OP_LESS", offset, stack, stackTop);
+  case OP_JUMP:
+    return jumpInstruction("OP_JUMP", 1, chunk, offset, stack, stackTop);
+  case OP_JUMP_IF_FALSE:
+    return jumpInstruction("OP_JUMP_IF_FALSE", 1, chunk, offset, stack, stackTop);
+  case OP_LOOP:
+    return jumpInstruction("OP_LOOP", -1, chunk, offset, stack, stackTop);    
 
   default:
-    printf("Unknown opcode %d\n", instruction);
+    printf("Unknown opcode %d", instruction);
+    if (stack != NULL) {
+      printf(" |");
+      printStackColumn(stack, stackTop);
+    }
+    printf("\n");
     return offset + 1;
   }
+}
+
+void disassembleInstructionWithStack(Chunk* chunk, int offset, Value* stack, Value* stackTop) {
+  disassembleInstruction(chunk, offset, stack, stackTop);
 }

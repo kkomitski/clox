@@ -76,6 +76,7 @@ static void skipWhitespace() {
     case '\n':
       scanner.line++;
       advance();
+      break;
     case '/':
       // Comments
       if (peekNext() == '/') {

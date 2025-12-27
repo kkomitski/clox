@@ -10,9 +10,9 @@
       "initCommands": [
         "type format add -f decimal uint8_t"
       ],
-      // "args": [
-      //   "./test.txt"
-      // ]
+      "args": [
+        "./test.txt"
+      ]
     },
     {
       "name": "CPPDBG",
