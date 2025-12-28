@@ -1,0 +1,6 @@
+// Function with arguments - see argument passing via stack
+fun add(a, b) {
+  return a + b;
+}
+
+print add(5, 7);

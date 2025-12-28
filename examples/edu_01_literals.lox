@@ -1,0 +1,6 @@
+// Basic literals - see how constants are loaded
+print 42;
+print true;
+print false;
+print nil;
+print "hello";

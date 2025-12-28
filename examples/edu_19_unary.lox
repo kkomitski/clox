@@ -1,0 +1,4 @@
+// Unary operators - see OP_NEGATE and OP_NOT
+print -42;
+print !true;
+print !false;

@@ -1,0 +1,5 @@
+// Comparison operators - see OP_LESS, OP_GREATER, OP_EQUAL
+print 5 < 10;
+print 10 > 5;
+print 5 == 5;
+print 5 != 10;

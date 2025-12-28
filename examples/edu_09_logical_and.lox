@@ -1,0 +1,4 @@
+// Logical AND - short-circuits with JUMP_IF_FALSE
+print true and true;
+print true and false;
+print false and true;

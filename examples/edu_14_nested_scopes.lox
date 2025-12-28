@@ -1,0 +1,13 @@
+// Nested scopes - see how locals are popped when leaving scope
+{
+  var a = 1;
+  {
+    var b = 2;
+    {
+      var c = 3;
+      print a + b + c;
+    }
+    print a + b;
+  }
+  print a;
+}

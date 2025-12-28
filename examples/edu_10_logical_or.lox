@@ -1,0 +1,4 @@
+// Logical OR - short-circuits with clever jump pattern
+print true or false;
+print false or true;
+print false or false;

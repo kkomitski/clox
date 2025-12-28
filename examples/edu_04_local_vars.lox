@@ -1,0 +1,32 @@
+
+// Local variables - see GET_LOCAL, SET_LOCAL (no DEFINE_LOCAL!)
+{
+  var a = 101;
+  var b = 102;
+  var c = 103;
+  var d = 104;
+  var e = 105;
+  var f = 106;
+  var g = 107;
+  var h = 108;
+  var i = 109;
+  var j = 110;
+  var k = 111;
+  var l = 112;
+  var m = 113;
+  var n = 114;
+  var o = 115;
+  var p = 116;
+  var q = 117;
+  var r = 118;
+  var s = 119;
+  var t = 120;
+  var u = 121;
+  var v = 122;
+  var w = 123;
+  var x = 124;
+  var y = 125;
+  var z = 126;
+  
+  print a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p + q + r + s + t + u + v + w + x + y + z; // Should print 2943
+}

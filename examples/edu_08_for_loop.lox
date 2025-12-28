@@ -1,0 +1,4 @@
+// For loop - desugared into initializer, condition, body, increment
+for (var i = 0; i < 3; i = i + 1) {
+  print i;
+}

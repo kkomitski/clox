@@ -88,14 +88,14 @@ void push(Value value) {
     int oldCapacity = vm.stackCapacity;
     int newCapacity = GROW_CAPACITY(oldCapacity);
     int stackIdx = vm.stackTop - vm.stack; // Count of currently utilized slots
-    
+
     Value* oldStack = vm.stack;
     vm.stackCapacity = newCapacity;
     vm.stack = GROW_ARRAY(Value, vm.stack, oldCapacity, newCapacity);
-    
+
     // Update stackTop to point to the new stack
     vm.stackTop = vm.stack + stackIdx;
-    
+
     // Update all frame slots pointers to point to the new stack
     for (int i = 0; i < vm.frameCount; i++) {
       vm.frames[i].slots = vm.stack + (vm.frames[i].slots - oldStack);
@@ -119,7 +119,7 @@ Value pop() {
     vm.stackCapacity = newCapacity;
     vm.stack = SHRINK_ARRAY(Value, vm.stack, oldCapacity, newCapacity);
     vm.stackTop = vm.stack + stackIdx;
-    
+
     // Update all frame slots pointers to point to the new stack
     for (int i = 0; i < vm.frameCount; i++) {
       vm.frames[i].slots = vm.stack + (vm.frames[i].slots - oldStack);
@@ -347,6 +347,7 @@ static InterpretResult run() {
         break;
       }
       case OP_PRINT: {
+        printf("[OP_PRINT] ");
         printValue(pop());
         printf("\n");
         break;

@@ -1,0 +1,8 @@
+// Function with local variables - see slot allocation
+fun compute(x) {
+  var y = x * 2;
+  var z = y + 10;
+  return z;
+}
+
+print compute(5);

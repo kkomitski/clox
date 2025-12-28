@@ -1,0 +1,5 @@
+// Simple if - see JUMP_IF_FALSE and POP
+if (true) {
+  print "yes";
+}
+print "done";

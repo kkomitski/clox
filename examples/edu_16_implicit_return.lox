@@ -1,0 +1,6 @@
+// Implicit return - see OP_NIL, OP_RETURN at end
+fun noReturn() {
+  print "no explicit return";
+}
+
+print noReturn();

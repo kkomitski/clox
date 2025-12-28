@@ -26,7 +26,7 @@ debug:
 
 .PHONY: run
 run: build
-	./dist/main
+	./dist/main $(ARGS)
 
 .PHONY: clean
 clean:

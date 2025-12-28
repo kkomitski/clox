@@ -1,0 +1,5 @@
+// Global variables - see DEFINE_GLOBAL, GET_GLOBAL, SET_GLOBAL
+var x = 10;
+print x;
+x = 20;
+print x;

@@ -1,0 +1,6 @@
+// Function with no arguments - see OP_CALL 0
+fun greet() {
+  print "hello";
+}
+
+greet();
