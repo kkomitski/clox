@@ -33,6 +33,13 @@ static void printValueColumn(Value value) {
       snprintf(buffer, sizeof(buffer), "\"%.*s\"", 
                      (int)(sizeof(buffer) - 3 < str->length ? sizeof(buffer) - 3 : str->length), 
                      str->chars);
+    } else if (IS_FUNCTION(value)) {
+      ObjFunction* fn = AS_FUNCTION(value);
+      if (fn->name == NULL) {
+        snprintf(buffer, sizeof(buffer), "<script>");
+      } else {
+        snprintf(buffer, sizeof(buffer), "<fn %s>", fn->name->chars);
+      }
     } else {
       snprintf(buffer, sizeof(buffer), "<obj>");
     }
@@ -65,6 +72,22 @@ static int simpleInstruction(const char* name, int offset, Value* stack, Value* 
   return offset + 1;
 }
 
+static int returnInstruction(const char* name, int offset, Value* stack, Value* stackTop) {
+  printf("%-18s |         | ", name);
+  // Show the value being returned (top of stack)
+  if (stack != NULL && stackTop > stack) {
+    printValueColumn(stackTop[-1]);
+  } else {
+    printf("%-14s", "");
+  }
+  printf(" |");
+  if (stack != NULL) {
+    printStackColumn(stack, stackTop);
+  }
+  printf("\n");
+  return offset + 1;
+}
+
 static int byteInstruction(const char* name, Chunk* chunk, int offset, Value* stack, Value* stackTop) {
   uint8_t slot = chunk->code[offset + 1];
   printf("%-18s | %7d | %-14s |", name, slot, "");
@@ -91,8 +114,15 @@ static int jumpInstruction(const char* name, int sign, Chunk* chunk, int offset,
 static int constantInstruction(const char* name, Chunk* chunk, int offset, Value* stack, Value* stackTop) {
   uint8_t constant = chunk->code[offset + 1];
   printf("%-18s | %7d | ", name, constant);
-  printValueColumn(chunk->constants.values[constant]);
-  printf(" |");
+  
+  // Defensive check: ensure constant index is valid
+  if (chunk == NULL || chunk->constants.values == NULL || constant >= chunk->constants.count) {
+    printf("INVALID CONST  |");
+  } else {
+    printValueColumn(chunk->constants.values[constant]);
+    printf(" |");
+  }
+  
   if (stack != NULL) {
     printStackColumn(stack, stackTop);
   }
@@ -100,6 +130,26 @@ static int constantInstruction(const char* name, Chunk* chunk, int offset, Value
   // Because the `OP_CONSTANT` is actually 2 bytes, one for the opcode, one for
   // the index of the constant
   return offset + 2;
+}
+
+static int constantLongInstruction(const char* name, Chunk* chunk, int offset, Value* stack, Value* stackTop) {
+  uint16_t constant = (uint16_t)(chunk->code[offset + 1] << 8);
+  constant |= chunk->code[offset + 2];
+  printf("%-18s | %7u | ", name, constant);
+  
+  // Defensive check: ensure constant index is valid
+  if (chunk == NULL || chunk->constants.values == NULL || constant >= chunk->constants.count) {
+    printf("INVALID CONST  |");
+  } else {
+    printValueColumn(chunk->constants.values[constant]);
+    printf(" |");
+  }
+  
+  if (stack != NULL) {
+    printStackColumn(stack, stackTop);
+  }
+  printf("\n");
+  return offset + 3;
 }
 
 /*
@@ -125,15 +175,21 @@ int disassembleInstruction(Chunk* chunk, int offset, Value* stack, Value* stackT
     case OP_DEFINE_GLOBAL:
     case OP_GET_GLOBAL:
     case OP_SET_GLOBAL:
-      size = 2; break;
+      size = 2;
+      break;
     case OP_GET_LOCAL:
     case OP_SET_LOCAL:
-      size = 2; break;
+    case OP_CALL:
+      size = 2;
+      break;
     case OP_JUMP:
     case OP_JUMP_IF_FALSE:
-      size = 3; break;
+    case OP_LOOP:
+      size = 3;
+      break;
     default:
-      size = 1; break;
+      size = 1;
+      break;
   }
 
   // Print size and offset
@@ -158,7 +214,7 @@ int disassembleInstruction(Chunk* chunk, int offset, Value* stack, Value* stackT
   case OP_DIVIDE:
     return simpleInstruction("OP_DIVIDE", offset, stack, stackTop);
   case OP_RETURN:
-    return simpleInstruction("OP_RETURN", offset, stack, stackTop);
+    return returnInstruction("OP_RETURN", offset, stack, stackTop);
   case OP_PRINT:
     return simpleInstruction("OP_PRINT", offset, stack, stackTop);
   case OP_NIL:
@@ -191,13 +247,14 @@ int disassembleInstruction(Chunk* chunk, int offset, Value* stack, Value* stackT
     return jumpInstruction("OP_JUMP", 1, chunk, offset, stack, stackTop);
   case OP_JUMP_IF_FALSE:
     return jumpInstruction("OP_JUMP_IF_FALSE", 1, chunk, offset, stack, stackTop);
+  case OP_CALL:
+    return byteInstruction("OP_CALL", chunk, offset, stack, stackTop);
   case OP_LOOP:
     return jumpInstruction("OP_LOOP", -1, chunk, offset, stack, stackTop);    
 
   default:
-    printf("Unknown opcode %d", instruction);
+    printf("%-18s | %7d | %-14s |", "Unknown opcode", (int)instruction, "");
     if (stack != NULL) {
-      printf(" |");
       printStackColumn(stack, stackTop);
     }
     printf("\n");

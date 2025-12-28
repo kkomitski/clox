@@ -27,3 +27,7 @@ debug:
 .PHONY: run
 run: build
 	./dist/main
+
+.PHONY: clean
+clean:
+	rm -rf ./dist

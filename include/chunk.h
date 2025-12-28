@@ -25,53 +25,31 @@
   [00][01] - The index to constant but (0-65,535)
 */
 typedef enum {
-  // Return from the current function or exit the VM (close the stack frame)
-  OP_RETURN = 100, // 00
-
-  /*
-  Push a constant value from the constants array onto the stack
-  This will be 2 parts:
-  - [1 byte] for the opcode (0-255)
-  - [1 byte] for the index of the constants (0-255)
-  */
-  OP_CONSTANT, // 101
-  /*
-  This will be 2 parts:
-  - [1 byte] for the opcode (0-255)
-  - [2 bytes] for the index of the constants (0-65,536)
-  */
-  OP_CONSTANT_LONG, // 102
-  /*
-  This will be 2 parts:
-  - [1 byte] for the opcode (0-255)
-  - [4 bytes] for the index of the constants (0-4,294,967,295)
-  */
-  // OP_CONSTANT_LONG_LONG,
-  OP_ADD,      // 103
-  OP_SUBTRACT, // 104
-  OP_MULTIPLY, // 105
-  OP_DIVIDE,   // 106
-
-  OP_NOT,
-
-  OP_NEGATE, // 106
-  OP_PRINT,
-  OP_JUMP_IF_FALSE,
-  OP_JUMP,
-  OP_LOOP,
-
+  OP_CONSTANT,
   OP_NIL,
   OP_TRUE,
   OP_FALSE,
   OP_POP,
   OP_GET_LOCAL,
   OP_GET_GLOBAL,
+  OP_DEFINE_GLOBAL,
   OP_SET_LOCAL,
   OP_SET_GLOBAL,
-  OP_DEFINE_GLOBAL,
   OP_EQUAL,
   OP_GREATER,
   OP_LESS,
+  OP_ADD,
+  OP_SUBTRACT,
+  OP_MULTIPLY,
+  OP_DIVIDE,
+  OP_NOT,
+  OP_NEGATE,
+  OP_PRINT,
+  OP_JUMP,
+  OP_JUMP_IF_FALSE,
+  OP_LOOP,
+  OP_CALL,
+  OP_RETURN,
 } OpCode;
 
 // Defining it like this allows for adding custom type formatting into decimal

@@ -3,24 +3,26 @@
 
 #include "chunk.h"
 #include "object.h"
-#include "value.h"
 #include "table.h"
+#include "value.h"
 
-#define STACK_MAX 2048
+#define FRAMES_MAX 64 // Max recursion depth
+#define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
+
+typedef struct {
+  ObjFunction* function;
+  uint8_t* ip;
+  // Points into the VM's value stack at the first slot that this function can
+  // use
+  Value* slots;
+} CallFrame;
 
 // The indexes for this stack can be fit into a single byte
 // #define STACK_MAX 256
 
 typedef struct {
-  Chunk* chunk; // 40 bytes
-  /*
-  Instruction Position
-  this will be an actual pointer, pointed directly at the position
-
-  [OP_CONST, 3, OP_ADD, OP_RETURN] - it will skip the 3 here, and always point
-  to the OPs
-  */
-  uint8_t* ip; // 8 bytes
+  CallFrame frames[FRAMES_MAX];
+  int frameCount;
   int stackCapacity;
   Value* stack; // 8 bytes * 256 = 2048 bytes (2.048kb)
   /*
