@@ -11,7 +11,7 @@
         "type format add -f decimal uint8_t"
       ],
       "args": [
-        "./examples/function.lox"
+        "./examples/edu_21_closures.lox"
       ]
     },
     {

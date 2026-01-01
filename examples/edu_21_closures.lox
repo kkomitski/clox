@@ -1,0 +1,16 @@
+fun outer() {
+  var x = "foo";
+
+  fun mid() {
+    fun inner() {
+      print x;
+    }
+  }
+  return mid;
+}
+
+var mid = outer();
+var inner = mid();
+
+mid();
+inner();

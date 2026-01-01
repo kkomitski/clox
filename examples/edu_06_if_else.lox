@@ -1,6 +1,8 @@
 // If-else - see JUMP_IF_FALSE, JUMP, and two POPs
 if (false) {
   print "true branch";
+} else if(true) {
+  print "hello";
 } else {
   print "false branch";
 }

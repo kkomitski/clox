@@ -10,7 +10,7 @@
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 
 typedef struct {
-  ObjFunction* function;
+  ObjClosure* closure;
   uint8_t* ip;
   // Points into the VM's value stack at the first slot that this function can
   // use
@@ -33,6 +33,7 @@ typedef struct {
   Table globals;
   Table strings;
   Obj* objects;
+  ObjUpvalue* openUpvalues;
 } VM; // 2072 bytes (2.072kb)
 
 typedef enum {

@@ -62,7 +62,13 @@ typedef struct {
 typedef struct {
   Token name;
   int depth;
+  bool isCaptured;
 } Local;
+
+typedef struct {
+  uint8_t index;
+  bool isLocal;
+} Upvalue;
 
 typedef enum {
   TYPE_FUNCTION, // Any other function
@@ -75,6 +81,7 @@ typedef struct Compiler {
   FunctionType type;
 
   int localCount;
+  Upvalue upvalues[UINT8_COUNT];
   int scopeDepth;
   Local locals[UINT8_COUNT]; // fixed array of 255 locals
 } Compiler;
@@ -173,7 +180,7 @@ static int emitJump(uint8_t instruction) {
   emitByte(0xff);
   emitByte(0xff);
 
-  return currentChunk()->count - 2;
+  return currentChunk()->count - 2; // Index of the empty bytes
 }
 
 static void emitReturn() {
@@ -225,20 +232,21 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
 
   Local* local = &current->locals[current->localCount++];
   local->depth = 0;
+  local->isCaptured = false;
   local->name.start = "";
   local->name.length = 0;
 }
 
 static ObjFunction* endCompiler() {
   emitReturn();
-  
+
   ObjFunction* function = current->function;
 
 #ifdef DEBUG_PRINT_CODE
   if (!parser.hadError) {
-    disassembleChunk(
-        currentChunk(),
-        function->name != NULL ? function->name->chars : "<script>");
+    disassembleChunk(currentChunk(), function->name != NULL
+                                         ? function->name->chars
+                                         : "<script>");
   }
 #endif
 
@@ -253,7 +261,12 @@ static void endScope() {
 
   while (current->localCount > 0 &&
          current->locals[current->localCount - 1].depth > current->scopeDepth) {
-    emitByte(OP_POP);
+    if (current->locals[current->localCount - 1].isCaptured) {
+      emitByte(OP_CLOSE_UPVALUE);
+    } else {
+
+      emitByte(OP_POP);
+    }
     current->localCount--;
   }
 }
@@ -380,6 +393,46 @@ static int resolveLocal(Compiler* compiler, Token* name) {
   return -1;
 }
 
+/* Returns the index of the upvalue in the functions list of upvalues */
+static int addUpValue(Compiler* compiler, uint8_t index, bool isLocal) {
+  int upvalueCount = compiler->function->upvalueCount;
+
+  for(int i = 0; i < upvalueCount; i++) {
+    Upvalue* upvalue = &compiler->upvalues[i];
+    if(upvalue->index == index && upvalue->isLocal == isLocal) {
+      return i;
+    }
+  }
+
+  if(upvalueCount == UINT8_COUNT) {
+    error("Too many closure variables in function.");
+    return 0;
+  }
+
+  compiler->upvalues[upvalueCount].isLocal = isLocal;
+  compiler->upvalues[upvalueCount].index = index;
+  return compiler->function->upvalueCount++;
+}
+
+/* Try to find the value anywhere in the locals, if not found return -1 */
+static int resolveUpvalue(Compiler* compiler, Token* name) {
+  if(compiler->enclosing == NULL) return -1;
+
+  int local = resolveLocal(compiler->enclosing, name);
+  if(local != -1) {
+    compiler->enclosing->locals[local].isCaptured = true;
+    return addUpValue(compiler, (uint8_t)local, true);
+  }
+
+  // Recursively traverse up the scope tree to see if any of the wrapping compilers have the value
+  int upvalue = resolveUpvalue(compiler->enclosing, name);
+  if(upvalue != -1) {
+    return addUpValue(compiler, (uint8_t)upvalue, false);
+  }
+  
+  return -1;
+}
+
 static void addLocal(Token name) {
   if(current->localCount == UINT8_COUNT) {
     error("Too many local variables in function.");
@@ -390,6 +443,7 @@ static void addLocal(Token name) {
   local->name = name;
   // local->depth = current->scopeDepth;
   local->depth = -1;
+  local->isCaptured = false;
 }
 
 /*
@@ -432,6 +486,9 @@ static void namedVariable(Token name, bool canAssign) {
   if(arg != -1) {
     getOp = OP_GET_LOCAL;
     setOp = OP_SET_LOCAL;
+  } else if((arg = resolveUpvalue(current, &name)) != -1) {
+    getOp = OP_GET_UPVALUE;
+    setOp = OP_SET_UPVALUE;
   } else {
     arg = identifierConstant(&name);
     getOp = OP_GET_GLOBAL;
@@ -546,8 +603,10 @@ static void parsePrecedence(Precedence precedence) {
 
 /* Parse out the variable identifier
   *`GLOBAL` - add the variable identifier to the constants table and get its
-  index
-  *`LOCAL`  - push the variable identifier to the locals array
+  * index
+  *`LOCAL`  - declare the variable inside the locals, the index handle will be
+  grabbed from the locals stack mirror
+  * when lookup is required
 
   @returns
   *`GLOBAL` - the index of the variable inside the constants
@@ -660,7 +719,12 @@ static void function(FunctionType type) {
   block();
 
   ObjFunction* function = endCompiler();
-  emitBytes(OP_CONSTANT, makeConstant(OBJ_VAL(function)));
+  emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
+
+  for (int i = 0; i < function->upvalueCount; i++) {
+    emitByte(compiler.upvalues[i].isLocal ? 1 : 0);
+    emitByte(compiler.upvalues[i].index);
+  }
 }
 
 static void funDeclaration() {
@@ -694,21 +758,27 @@ static void expressionStatement() {
 }
 
 static void ifStatement() {
+  // Consume the parens and expression inside - if(expr)
   consume(TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
   expression();
   consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
 
+  // Save the location of the bytecode
+
+  // thenJump is conditional - it will check the value on top of stack and jump
+  // if false
   int thenJump = emitJump(OP_JUMP_IF_FALSE);
   emitByte(OP_POP);
   statement();
 
+  // elseJump is unconditional - the program will always jump to this
   int elseJump = emitJump(OP_JUMP);
-  
+
   patchJump(thenJump);
   emitByte(OP_POP);
 
   if (match(TOKEN_ELSE)) statement();
-  
+
   patchJump(elseJump);
 }
 

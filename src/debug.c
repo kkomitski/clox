@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "debug.h"
+#include "chunk.h"
 #include "object.h"
 #include "value.h"
 
@@ -152,6 +153,35 @@ static int constantLongInstruction(const char* name, Chunk* chunk, int offset, V
   return offset + 3;
 }
 
+static int closureInstruction(const char* name, Chunk* chunk, int offset, Value* stack, Value* stackTop) {
+  offset++;
+  uint8_t constant = chunk->code[offset++];
+  printf("%-18s | %7d | ", name, constant);
+  
+  // Defensive check: ensure constant index is valid
+  if (chunk == NULL || chunk->constants.values == NULL || constant >= chunk->constants.count) {
+    printf("INVALID CONST  |");
+  } else {
+    printValueColumn(chunk->constants.values[constant]);
+    printf(" |");
+  }
+  
+  if (stack != NULL) {
+    printStackColumn(stack, stackTop);
+  }
+  printf("\n");
+  
+  ObjFunction* function = AS_FUNCTION(chunk->constants.values[constant]);
+  for (int j = 0; j < function->upvalueCount; j++) {
+    int isLocal = chunk->code[offset++];
+    int index = chunk->code[offset++];
+    printf("%04d      |                     %s %d\n",
+           offset - 2, isLocal ? "local" : "upvalue", index);
+  }
+  
+  return offset;
+}
+
 /*
   Prints the current instruction's offset and source line number in a formatted
   way.
@@ -171,6 +201,7 @@ int disassembleInstruction(Chunk* chunk, int offset, Value* stack, Value* stackT
   uint8_t instruction = chunk->code[offset];
   int size = 1; // default size for simple instructions
   switch (instruction) {
+    case OP_CLOSURE:
     case OP_CONSTANT:
     case OP_DEFINE_GLOBAL:
     case OP_GET_GLOBAL:
@@ -215,6 +246,8 @@ int disassembleInstruction(Chunk* chunk, int offset, Value* stack, Value* stackT
     return simpleInstruction("OP_DIVIDE", offset, stack, stackTop);
   case OP_RETURN:
     return returnInstruction("OP_RETURN", offset, stack, stackTop);
+  case OP_CLOSE_UPVALUE:
+    return returnInstruction("OP_CLOSE_UPVALUE", offset, stack, stackTop);
   case OP_PRINT:
     return simpleInstruction("OP_PRINT", offset, stack, stackTop);
   case OP_NIL:
@@ -251,6 +284,12 @@ int disassembleInstruction(Chunk* chunk, int offset, Value* stack, Value* stackT
     return byteInstruction("OP_CALL", chunk, offset, stack, stackTop);
   case OP_LOOP:
     return jumpInstruction("OP_LOOP", -1, chunk, offset, stack, stackTop);    
+  case OP_CLOSURE:
+    return closureInstruction("OP_CLOSURE", chunk, offset, stack, stackTop);
+  case OP_GET_UPVALUE:
+    return byteInstruction("OP_GET_UPVALUE", chunk, offset, stack, stackTop);
+  case OP_SET_UPVALUE:
+    return byteInstruction("OP_SET_UPVALUE", chunk, offset, stack, stackTop);
 
   default:
     printf("%-18s | %7d | %-14s |", "Unknown opcode", (int)instruction, "");
